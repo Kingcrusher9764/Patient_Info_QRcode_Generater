@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./node_modules/html5-qrcode/html5-qrcode.min.js"></script>
+    <link rel="stylesheet" href="styles/database.css">
+</head>
+
+<body>
+    <div id="readerBox">
+        <div id="reader"></div>
+    </div>
+    <div id="output"></div>
+    <div id="res">
+        <table border="0">
+            <tr><th>Name</th><td id="name" colspan="2"></td></tr>
+            <tr><th>Email</th><td id="email" colspan="2"></td></tr>
+            <tr><th>Address</th><td id="address" colspan="2"></td></tr>
+            <tr><th>Date of Birth</th><td id="dob" colspan="2"></td></tr>
+            <tr><th>Phone No.</th><td id="no" colspan="2"></td></tr>
+            <tr><th>Gender</th><td id="gender" colspan="2"></td></tr>
+            <tr><th>Blood Group</th><td id="bloodg" colspan="2"></td></tr>
+            <tr><th>Prescription</th><td id="pres"></td><td style ="width:8%"><button onclick="update('pres')" id="button1">Edit</button></td></tr>
+            <tr><th>Medicines ongoing</th><td id="med"></td><td ><button onclick="update('med')" id="button2">Edit</button></tr>
+            <tr><th>Doctor assigned</th><td id="doctor"></td><td ><button onclick="update('doctor')" id="button3">Edit</button></tr>
+        </table>
+    </div>
+    <script>
+    var med = document.getElementById("med")
+    var doctor = document.getElementById("doctor")
+    var pres = document.getElementById("pres")
+    var name1 = document.getElementById("name")
+    var No = document.getElementById("no")
+    var dob = document.getElementById("dob")
+    var gender = document.getElementById("gender")
+
+    const scanner = new Html5QrcodeScanner("reader", {
+        qrbox:{
+            width:250,
+            height:250,
+        },
+        fps:20,
+    });
+
+    async function update(datakey){
+        if(datakey==="pres"){
+            var datavalue = prompt("Enter the prescription: ");
+        }else if(datakey==="med"){
+            var datavalue = prompt("Enter the medicines: ");
+        }else if(datakey==="doctor"){
+            var datavalue = prompt("Enter the doctor name: ");
+        }
+
+        fetch("/update-user",{
+            method: "post",
+            headers: new Headers({"Content-Type":"application/json"}),
+            body: JSON.stringify({
+                mobile: No.innerHTML,
+                key: datakey,
+                value: datavalue
+            })
+        }).then(res=>res.json())
+        .then(response=>{
+            if(response.msg=="Success"){
+                alert(`Updated`);
+            }
+        })
+
+        document.getElementById(datakey).innerHTML = datavalue;
+    }
+    scanner.render(success, error);
+
+    async function success(res){
+        var result = JSON.parse(res);
+        console.log(result)
+
+        scanner.clear();
+        document.getElementById("reader").remove();
+
+        name1.innerHTML = result.name;
+        document.getElementById("email").innerHTML = result.email;
+        dob.innerHTML = result.date;
+        No.innerHTML = result.mobile;
+        gender.innerHTML = result.gender;
+        document.getElementById("bloodg").innerHTML = result.bloodGroup;
+        document.getElementById("address").innerHTML = result.address;
+        pres.innerHTML = " ";
+        med.innerHTML = " ";
+        doctor.innerHTML = " ";
+        document.getElementById("button1").style.opacity = 1;
+        document.getElementById("button2").style.opacity = 1;
+        document.getElementById("button3").style.opacity = 1;
+        await fetch("/get-user",{
+                    method: "post",
+                    headers: new Headers({"Content-Type":"application/json"}),
+                    body: JSON.stringify({
+                        aadhar: result.aadhar,
+                        mobile: result.mobile
+                    })
+                }).then(res=>res.json())
+                .then(response=>{
+                    if(response.result.Prescription){
+                        pres.innerHTML = `${response.result.Prescription}`;
+                    }
+                    if(response.result.Medicines){
+                        med.innerHTML = `${response.result.Medicines}`;
+                    }
+                    if(response.result.DoctorAssigned){
+                        doctor.innerHTML = `${response.result.DoctorAssigned}`;
+                    }
+                }).catch(err=>{
+                    console.log(err);
+                })
+    }
+    function error(err){
+        console.error(err);
+    }
+
+    </script>
+</body>
+</html>

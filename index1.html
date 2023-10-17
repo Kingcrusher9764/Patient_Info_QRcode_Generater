@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles/form.css">
+    <link rel="stylesheet" href="https://cdn.tutorialjinni.com/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <script src="https://cdn.tutorialjinni.com/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div id="contact" name="google-sheet">
+            <!-- form for user data -->
+            <h1>Patient Registration Form</h1>
+            <h3>Fill the form below and press the submit button!</h3>
+            <div class="row">
+                <!-- first column -->
+                <div class="column">
+                    <p>Full Name:</p>
+                    <fieldset>
+                        <input type="text" placeholder="Full Name *" name="Name" id="Name" required autofocus>
+                    </fieldset>
+                    <p>Email Id:</p>
+                    <fieldset>
+                        <input type="email" placeholder="Your email *" name="Email" id="Email" required autofocus>
+                    </fieldset>
+                    <p>Address:</p>
+                    <fieldset>
+                        <input type="address" placeholder="Your address *" name="Address" id="Address" required autofocus>
+                    </fieldset>
+                    <p>Date of Birth:</p>
+                    <fieldset>
+                        <input type="text" placeholder="Date of birth *" name="Date" id="Date" onfocus="(this.type = 'date')"
+                            required autofocus>
+                    </fieldset>
+                    <p>Mobile Number:</p>
+                    <fieldset>
+                        <input type="text" placeholder="Mobile number *" name="Mobile" id="Mobile" required autofocus>
+                    </fieldset>
+                </div>
+                <!-- second column -->
+                <div class="column">
+                    <p>Gender:</p>
+                    <fieldset>
+                        <input type="text" placeholder="Gender *" name="Gender" id="Gender" required autofocus>
+                    </fieldset>
+                    <p>Weight:</p>
+                    <fieldset>
+                        <input type="weight" placeholder="Your Weight in Kg *" name="Weight" id="Weight" required autofocus>
+                    </fieldset>
+                    <p>BloodGroup:</p>
+                    <fieldset>
+                        <input type="bloodgroup" placeholder="Your bloodgroup *" name="Bloodgroup" id="Bloodgroup" required autofocus>
+                    </fieldset>
+                    <p>Aadhaar Number:</p>
+                    <fieldset>
+                        <input type="aadhaar" placeholder="Your aadhaar number *" name="Aadhaar" id="Aadhaar" required autofocus>
+                    </fieldset>
+                </div>
+            </div>
+            <!-- submit button use to generate the qrcode onclick-->
+            <fieldset>
+                <input type="button" value="Submit" id="button" name="submit" class="btn btn-primary" onclick="generateqr()">
+            </fieldset>
+            <div id="qrcode"></div>
+        </div>
+    </div>
+    <script>
+        // function to generate qrcode
+        function generateqr() {
+            // get details from form to variable
+            var Name = document.getElementById('Name').value;
+            var Email = document.getElementById('Email').value;
+            var Address = document.getElementById('Address').value;
+            var Date = document.getElementById('Date').value;
+            var Mobile = document.getElementById('Mobile').value;
+            var Gender = document.getElementById('Gender').value;
+            var Weight = document.getElementById('Weight').value;
+            var Bloodgroup = document.getElementById('Bloodgroup').value;
+            var Aadhaar = document.getElementById('Aadhaar').value;
+            
+            // transfer the user data to the server
+            fetch("/register-user", {
+                    method: "post",
+                    headers: new Headers({"Content-Type":"application/json"}),
+                    body: JSON.stringify({
+                        name: Name,
+                        email: Email,
+                        address: Address,
+                        dob: Date,
+                        mobile: Mobile,
+                        gender: Gender,
+                        weight: Weight,
+                        bloodGroup: Bloodgroup,
+                        aadhar: Aadhaar,
+                    })
+                }).then(res=>res.json())
+                .then(response=>{
+                    if(response.msg=="Success"){
+                        alert("Registered and Qrcode generated successfully");
+                        document.getElementById("qrcode").innerHTML = `<img src="/output_file/file.png" width=200px />`;
+                    }else if(response.msg=="Already exist"){
+                        alert("Already exist");
+                    }else{
+                        alert("Fill in all the details")
+                    }
+                }).catch(err=>console.error(err));
+        }
+        
+    </script>
+</body>
+
+</html>
